@@ -78,6 +78,19 @@ export async function getRelatedPosts(categoryId: string, excludeId: string) {
   });
 }
 
+// ─── Protected reads ─────────────────────────────────────────
+
+export async function getPostsByAuthor() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) throw new Error("Unauthorized");
+
+  return db.post.findMany({
+    where: { authorId: session.user.id },
+    include: { category: true, tags: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 // ─── Mutations ───────────────────────────────────────────────
 
 export type CreatePostInput = {
@@ -117,5 +130,18 @@ export async function createPost(data: CreatePostInput) {
   });
 
   revalidatePath("/blogs");
+  revalidatePath("/blogs/manage");
   return post;
+}
+
+export async function deletePost(id: string) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) throw new Error("Unauthorized");
+
+  const post = await db.post.findUnique({ where: { id } });
+  if (!post || post.authorId !== session.user.id) throw new Error("Forbidden");
+
+  await db.post.delete({ where: { id } });
+  revalidatePath("/blogs");
+  revalidatePath("/blogs/manage");
 }
