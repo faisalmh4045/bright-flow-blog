@@ -1,6 +1,9 @@
 "use server";
 
 import { prisma as db } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 export type PostWithRelations = Awaited<ReturnType<typeof getPosts>>[number];
 export type PostFilters = {
@@ -8,6 +11,13 @@ export type PostFilters = {
   categorySlug?: string;
   tagSlug?: string;
 };
+
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
 // ─── Public reads ────────────────────────────────────────────
 
@@ -38,4 +48,46 @@ export async function getPosts(filters: PostFilters = {}) {
     },
     orderBy: { createdAt: "desc" },
   });
+}
+
+// ─── Mutations ───────────────────────────────────────────────
+
+export type CreatePostInput = {
+  title: string;
+  excerpt: string;
+  content: string;
+  coverImage?: string;
+  categoryId: string;
+  tagIds: string[];
+  readingTime: number;
+};
+
+export async function createPost(data: CreatePostInput) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) throw new Error("Unauthorized");
+
+  const baseSlug = slugify(data.title);
+  const existing = await db.post.findMany({
+    where: { slug: { startsWith: baseSlug } },
+    select: { slug: true },
+  });
+  const slug = existing.length > 0 ? `${baseSlug}-${Date.now()}` : baseSlug;
+
+  const post = await db.post.create({
+    data: {
+      title: data.title,
+      slug,
+      excerpt: data.excerpt,
+      content: data.content,
+      coverImage: data.coverImage || null,
+      readingTime: data.readingTime,
+      categoryId: data.categoryId,
+      tags: { connect: data.tagIds.map((id) => ({ id })) },
+      authorId: session.user.id,
+      published: true,
+    },
+  });
+
+  revalidatePath("/blogs");
+  return post;
 }
