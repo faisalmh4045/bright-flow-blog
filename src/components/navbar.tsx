@@ -2,11 +2,27 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronsUpDown, LogOut, FileText, Plus } from "lucide-react";
 import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+
+  const { data: session } = authClient.useSession();
+
+  const handleSignOut = async () => {
+    await authClient.signOut();
+  };
 
   return (
     <nav className="border-b border-border bg-background sticky top-0 z-50">
@@ -44,12 +60,87 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/signup">Sign Up</Link>
-            </Button>
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label="User menu"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage
+                        src={session.user.image || ""}
+                        alt={session.user.name || ""}
+                      />
+                      <AvatarFallback>
+                        {session.user.name?.[0]?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                >
+                  <DropdownMenuLabel>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          src={session.user.image || ""}
+                          alt={session.user.name || ""}
+                        />
+                        <AvatarFallback>
+                          {session.user.name?.[0]?.toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">
+                          {session.user.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {session.user.email}
+                        </span>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/blogs/manage">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Manage
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/blogs/create">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Button
+                      variant="ghost"
+                      size={"sm"}
+                      onClick={handleSignOut}
+                      className="w-full justify-start"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </Button>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button variant="outline" asChild>
+                  <Link href="/login">Sign In</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -83,12 +174,87 @@ export function Navbar() {
               About
             </Link>
             <div className="px-4 pt-4 space-y-2">
-              <Button variant="outline" asChild className="w-full">
-                <Link href="/login">Sign In</Link>
-              </Button>
-              <Button asChild className="w-full">
-                <Link href="/signup">Sign Up</Link>
-              </Button>
+              {session ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      aria-label="User menu"
+                    >
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage
+                          src={session.user.image || ""}
+                          alt={session.user.name || ""}
+                        />
+                        <AvatarFallback>
+                          {session.user.name?.[0]?.toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="flex-1 text-left">
+                        {session.user.name}
+                      </span>
+                      <ChevronsUpDown className="h-4 w-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="bottom"
+                    align="start"
+                    className="w-[--radix-dropdown-menu-trigger-width]"
+                  >
+                    <DropdownMenuLabel>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage
+                            src={session.user.image || ""}
+                            alt={session.user.name || ""}
+                          />
+                          <AvatarFallback>
+                            {session.user.name?.[0]?.toUpperCase() || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">
+                            {session.user.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {session.user.email}
+                          </span>
+                        </div>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/blogs/manage">
+                        <FileText className="mr-2 h-4 w-4" />
+                        Manage
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/blogs/create">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/api/auth/logout">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <>
+                  <Button variant="outline" asChild className="w-full">
+                    <Link href="/login">Sign In</Link>
+                  </Button>
+                  <Button asChild className="w-full">
+                    <Link href="/signup">Sign Up</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}
