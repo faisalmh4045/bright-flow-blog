@@ -50,6 +50,34 @@ export async function getPosts(filters: PostFilters = {}) {
   });
 }
 
+export async function getPostById(id: string) {
+  return db.post.findUnique({
+    where: { id },
+    include: {
+      author: { select: { name: true, image: true } },
+      category: true,
+      tags: true,
+    },
+  });
+}
+
+export async function getRelatedPosts(categoryId: string, excludeId: string) {
+  return db.post.findMany({
+    where: {
+      published: true,
+      categoryId,
+      NOT: { id: excludeId },
+    },
+    include: {
+      author: { select: { name: true } },
+      category: true,
+      tags: true,
+    },
+    take: 3,
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 // ─── Mutations ───────────────────────────────────────────────
 
 export type CreatePostInput = {
