@@ -10,6 +10,7 @@ export type PostFilters = {
   search?: string;
   categorySlug?: string;
   tagSlug?: string;
+  limit?: number;
 };
 
 function slugify(text: string) {
@@ -22,7 +23,7 @@ function slugify(text: string) {
 // ─── Public reads ────────────────────────────────────────────
 
 export async function getPosts(filters: PostFilters = {}) {
-  const { search, categorySlug, tagSlug } = filters;
+  const { search, categorySlug, tagSlug, limit } = filters;
 
   return db.post.findMany({
     where: {
@@ -47,6 +48,7 @@ export async function getPosts(filters: PostFilters = {}) {
       tags: true,
     },
     orderBy: { createdAt: "desc" },
+    ...(limit && { take: limit }),
   });
 }
 
