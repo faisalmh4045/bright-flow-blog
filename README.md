@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BrightFlow
+
+A modern blogging platform where anyone can read, write, and share ideas. Built with Next.js App Router, Better Auth, Neon Postgres, and Prisma.
+
+🚀 Visit the [Live Demo](https://bright-flow-blog.vercel.app/) to explore the app in action.
+
+---
+
+## Features
+
+- **Public blog feed** with search, category filter, and tag filter
+- **Full blog detail page** with markdown rendering and related posts
+- **Authentication** via email/password (Better Auth)
+- **Write a post** — protected form with category, tags, cover image, and markdown content
+- **Manage your posts** — view and delete your own posts from a dashboard table
+- **Static generation** for individual blog pages via `generateStaticParams`
+- **Server Actions** for all data mutations (create, delete)
+- **Responsive UI** across mobile, tablet, and desktop (shadcn/ui + Tailwind CSS)
+
+---
+
+## Tech Stack
+
+| Layer      | Technology                 |
+| ---------- | -------------------------- |
+| Framework  | Next.js (App Router)       |
+| Auth       | Better Auth                |
+| Database   | Neon (serverless Postgres) |
+| ORM        | Prisma                     |
+| UI         | shadcn/ui + Tailwind CSS   |
+| Deployment | Vercel                     |
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- **Node.js** v20.9 or higher
+- **PostgreSQL**: Set up a database on [Neon](https://neon.com/)
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 1. Clone the repository
+git clone https://github.com/faisalmh4045/bright-flow-blog.git
+cd bright-flow-blog
+
+# 2. Install dependencies
+pnpm install
+
+# 3. Set up environment variables
+cp .env.example .env
+# Open .env and fill in your values (DATABASE_URL, BETTER_AUTH_SECRET, etc.)
+
+# 4. Generate Prisma client
+npx prisma generate
+
+# 5. Push schema to the database
+npx prisma db push
+
+# 6. Seed the database (optional but recommended)
+npx prisma db seed
+
+# 7. Start the development server
+pnpm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+# Database (Neon)
+DATABASE_URL=your_neon_connection_string
 
-## Learn More
+# Better Auth
+BETTER_AUTH_SECRET=your_random_secret_here
+BETTER_AUTH_URL=http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Deployment (Vercel)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push your repository to GitHub
+2. Import the project on [Vercel](https://vercel.com)
+3. Add all environment variables from above in the Vercel dashboard
+4. Set `BETTER_AUTH_URL` to your production domain (e.g. `https://bright-flow.vercel.app`)
+5. Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Routes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Route           | Access    | Description                                                               |
+| --------------- | --------- | ------------------------------------------------------------------------- |
+| `/`             | Public    | Landing page — hero, featured posts, categories, testimonials, newsletter |
+| `/blogs`        | Public    | All blog posts with search and filters                                    |
+| `/blogs/[id]`   | Public    | Full blog post detail with related posts                                  |
+| `/about`        | Public    | About the platform                                                        |
+| `/login`        | Public    | Sign in with email/password                                               |
+| `/signup`       | Public    | Create a new account                                                      |
+| `/blogs/create` | Protected | Write and publish a new blog post                                         |
+| `/blogs/manage` | Protected | View and delete your own posts                                            |
